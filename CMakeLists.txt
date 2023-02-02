@@ -5,29 +5,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
-project(SFINAE VERSION ${PROJECT_VESRION})
+project(print_ip VERSION ${PROJECT_VESRION})
 
 configure_file(lib/version_lib/version_define.h.in version_define.h)
 
-#set(HEADER src/my_allocator.h
-#  src/my_container.h
-#)
-
-set(SOURCES src/print_ip.cpp
+set(SOURCES src/main.cpp
 )
 
 add_library(version lib/version_lib/version.cpp lib/version_lib/version.h)
-add_executable(SFINAE #[[${HEADER}]] ${SOURCES})
+add_executable(print_ip #[[${HEADER}]] ${SOURCES})
 
 target_include_directories(version
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
-target_link_libraries(SFINAE PRIVATE
+target_link_libraries(print_ip PRIVATE
     version
 )
 
-install(TARGETS SFINAE RUNTIME DESTINATION bin)
+install(TARGETS print_ip RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 
