@@ -13,7 +13,7 @@ set(SOURCES src/main.cpp
 )
 
 add_library(version lib/version_lib/version.cpp lib/version_lib/version.h)
-add_executable(print_ip)
+add_executable(print_ip ${SOURCES})
 
 target_include_directories(version
     PRIVATE "${CMAKE_BINARY_DIR}"
