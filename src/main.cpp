@@ -1,7 +1,7 @@
 ﻿/// @file
 /// пример метафункций и функций использующих SFINAE
 ///
-/// для примера используется функция @fn print_ip которая в зависимости
+/// для примера используется функция print_ip которая в зависимости
 /// от параметра на этапе компиляции инстанцирует подходящий вариант
 #include <functional>
 #include <iostream>
@@ -15,23 +15,30 @@ const size_t count_bit = sizeof(int8_t) * 8;
 
 using namespace std;
 
+/// метафункция сравнения типов в кортеже
+/// @return true_type or false_type
 template <typename T, typename... Arg>
 struct TupleIsGomogenCopare {
   static const bool value = (... && (std::is_same_v<T, Arg>));
   using type = std::integral_constant<bool, value>;
 };
 
+/// функция выброса исключений если кортеж не гомогенен
+/// @throw compile_error
 template <typename T>
 constexpr bool TupleIsGomogenCheckCondition(T) {
   static_assert(std::is_same_v<T, true_type>, "TupleIsNOTGomogen");
   return T{};
 }
 
+/// метафункция проверки на гомогенность кортежа 
 template <typename... Arg>
 struct TupleIsGomogen {
   static const bool value = TupleIsGomogenCheckCondition(typename TupleIsGomogenCopare<Arg...>::type{});
 };
 
+/// функция печати кортежа 
+/// @param [in] сылка на кортеж
 template <typename TupleT, std::size_t... Is>
 void printTuple(const TupleT& tp, std::index_sequence<Is...>) {
   std::stringstream result;
@@ -41,14 +48,14 @@ void printTuple(const TupleT& tp, std::index_sequence<Is...>) {
   std::cout << res << '\n';
 }
 
-/// @fn для кортежей
+/// для кортежей
 template <typename... Arg, typename Check = std::enable_if_t<TupleIsGomogen<Arg...>::value, void>,
           std::size_t tup_size = sizeof...(Arg)>
 void print_ip(const std::tuple<Arg...>& tp) {
   printTuple(tp, std::make_index_sequence<tup_size>{});
 }
 
-/// @fn для целочисленных типов
+/// для целочисленных типов
 template <typename T, typename Check = std::enable_if_t<std::is_integral_v<T>, void>>
 void print_ip(T val) {
   int shift = sizeof(T) * count_bit - count_bit;
@@ -60,7 +67,7 @@ void print_ip(T val) {
   }
   std::cout << '\n';
 }
-/// @fn для контейнеров
+/// для контейнеров
 template <typename T>
 void print_ip(const T& val, typename T::iterator = {}) {
   bool first = true;
@@ -74,7 +81,7 @@ void print_ip(const T& val, typename T::iterator = {}) {
   std::cout << '\n';
 }
 
-/// @fn для строк
+/// для строк
 template <>
 void print_ip(const std::string& val, string::iterator) {
   std::cout << val << '\n';
