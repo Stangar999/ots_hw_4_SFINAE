@@ -5,15 +5,28 @@
 /// от параметра на этапе компиляции инстанцирует подходящий вариант
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <sstream>
 #include <tuple>
 #include <vector>
 
+using namespace std;
+
 /// константа хранящая размер бит в типе int8_t
 const size_t count_bit = sizeof(int8_t) * 8;
 
-using namespace std;
+namespace detail {
+template <class Container>
+void printList(Container list) {
+  using Type = typename Container::value_type;
+  std::stringstream result;
+  std::copy(list.begin(), list.end(), std::ostream_iterator<Type>(result, "."));
+  auto str = result.str();
+  str.pop_back();
+  std::cout << str << std::endl;
+}
+}  // namespace detail
 
 /// метафункция сравнения типов в кортеже
 /// @return true_type or false_type
@@ -31,21 +44,18 @@ constexpr bool TupleIsGomogenCheckCondition(T) {
   return T{};
 }
 
-/// метафункция проверки на гомогенность кортежа 
+/// метафункция проверки на гомогенность кортежа
 template <typename... Arg>
 struct TupleIsGomogen {
   static const bool value = TupleIsGomogenCheckCondition(typename TupleIsGomogenCopare<Arg...>::type{});
 };
 
-/// функция печати кортежа 
+/// функция печати кортежа
 /// @param [in] сылка на кортеж
 template <typename TupleT, std::size_t... Is>
 void printTuple(const TupleT& tp, std::index_sequence<Is...>) {
-  std::stringstream result;
-  ((result << std::get<Is>(tp) << "."), ...);
-  std::string res = result.str();
-  res.pop_back();  // удаляет последнюю точку
-  std::cout << res << '\n';
+  auto list = {std::get<Is>(tp)...};
+  detail::printList(list);
 }
 
 /// для кортежей
@@ -58,32 +68,27 @@ void print_ip(const std::tuple<Arg...>& tp) {
 /// для целочисленных типов
 template <typename T, typename Check = std::enable_if_t<std::is_integral_v<T>, void>>
 void print_ip(T val) {
-  int shift = sizeof(T) * count_bit - count_bit;
-  for (bool first = true; shift >= 0; shift -= count_bit, first = false) {
-    if (!first) {
-      std::cout << ".";
-    }
-    std::cout << ((val >> shift) & 0xFF);
+  constexpr size_t bytes_count = sizeof(T);
+  T shift = bytes_count * count_bit - count_bit;
+  std::array<int, bytes_count> bytes{};
+  for (size_t i = 0; i < bytes_count; shift -= count_bit, ++i) {
+    const int byte = (val >> shift) & 0xFF;
+    bytes[i] = byte;
   }
-  std::cout << '\n';
+  detail::printList(bytes);
 }
 /// для контейнеров
-template <typename T>
-void print_ip(const T& val, typename T::iterator = {}) {
-  bool first = true;
-  for (const auto& v : val) {
-    if (!first) {
-      std::cout << ".";
-    }
-    first = false;
-    std::cout << v;
-  }
-  std::cout << '\n';
+template <typename T,
+          std::enable_if_t<std::is_same_v<std::list<typename std::decay_t<T>::value_type>, std::decay_t<T>> ||
+                               std::is_same_v<std::vector<typename std::decay_t<T>::value_type>, std::decay_t<T>>,
+                           int> = 0>
+void print_ip(const T& val) {
+  detail::printList(val);
 }
 
-/// для строк
-template <>
-void print_ip(const std::string& val, string::iterator) {
+// для строк
+template <typename T, std::enable_if_t<std::is_same_v<std::string, std::decay_t<T>>, int> = 0>
+void print_ip(const T& val) {
   std::cout << val << '\n';
 }
 
