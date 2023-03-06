@@ -21,6 +21,8 @@ jobs:
       with:
         doxyfile-path: ./Doxyfile
         working-directory: .
+    - run: pwd
+    - run: ls
     
     # Deploy the HTML documentation to GitHub Pages
     - name: GH Pages Deployment
@@ -32,3 +34,5 @@ jobs:
         allow_empty_commit: false
         force_orphan: true
         publish_branch: gh-pages
+    - run: pwd
+    - run: ls
