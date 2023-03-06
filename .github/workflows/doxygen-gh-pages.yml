@@ -17,10 +17,10 @@ jobs:
     
     # Build the HTML documentation
     - name: Doxygen Action
-      uses: mattnotmitt/doxygen-action@v1.1.0
- #     with:
- #         doxyfile-path: ./Doxyfile
- #          working-directory: .
+      uses: mattnotmitt/doxygen-action@v1.9.5
+      with:
+        doxyfile-path: ./Doxyfile
+        working-directory: .
     
     # Deploy the HTML documentation to GitHub Pages
     - name: GH Pages Deployment
